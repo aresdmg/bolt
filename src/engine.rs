@@ -105,3 +105,17 @@ pub fn done(index: String) {
     let updated = serde_json::to_string_pretty(&todos).unwrap();
     fs::write(FILE_NAME, updated).unwrap();
 }
+
+pub fn remove(index: String) {
+    let mut todos: Vec<Todos> = match fs::read_to_string(FILE_NAME) {
+        Ok(file_content) => serde_json::from_str(&file_content).unwrap_or_else(|_| Vec::new()),
+        Err(_) => Vec::new(),
+    };
+
+    let id: usize = index.parse().expect("Invalid number");
+    todos.remove(id - 1);
+
+    let updated_todos = serde_json::to_string_pretty(&todos).unwrap();
+    fs::write(FILE_NAME, updated_todos).unwrap();
+    return;
+}

@@ -53,7 +53,6 @@ pub fn start() {
 
     let pasred_command: String = engine::parse_command(&args[0]);
     let (pasred_message, options) = engine::pasred_message(&args[1..]);
-    // println!("{} => {}  | {:?}", pasred_command, pasred_message, options);
 
     match pasred_command.as_str() {
         "add" => {
@@ -63,9 +62,10 @@ pub fn start() {
             engine::list();
         }
         "done" => {
-            let index = pasred_message;
-
-            engine::done(index);
+            engine::done(pasred_message);
+        }
+        "remove" => {
+            engine::remove(pasred_message);
         }
         _ => {
             println!("command:{} not found!", pasred_command)
