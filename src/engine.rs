@@ -117,5 +117,4 @@ pub fn remove(index: String) {
 
     let updated_todos = serde_json::to_string_pretty(&todos).unwrap();
     fs::write(FILE_NAME, updated_todos).unwrap();
-    return;
 }
