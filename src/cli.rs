@@ -39,7 +39,7 @@ fn init() {
 
 fn get_args() -> Vec<String> {
     let arguement: Vec<String> = env::args().skip(1).collect();
-    if arguement.len() < 2 {
+    if arguement.len() < 1 {
         println!("Arguments should not be empty");
         process::exit(1);
     }
@@ -53,11 +53,19 @@ pub fn start() {
 
     let pasred_command: String = engine::parse_command(&args[0]);
     let (pasred_message, options) = engine::pasred_message(&args[1..]);
-    println!("{:?}", options);
+    // println!("{} => {}  | {:?}", pasred_command, pasred_message, options);
 
     match pasred_command.as_str() {
         "add" => {
             engine::add(pasred_message, options);
+        }
+        "list" => {
+            engine::list();
+        }
+        "done" => {
+            let index = pasred_message;
+
+            engine::done(index);
         }
         _ => {
             println!("command:{} not found!", pasred_command)

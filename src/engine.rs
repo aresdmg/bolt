@@ -1,6 +1,7 @@
 use std::fs;
 
 use chrono::Utc;
+use prettytable::{Table, row};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -65,4 +66,42 @@ pub fn add(messages: String, _options: Vec<String>) {
 
     fs::write(FILE_NAME, json).unwrap();
     return;
+}
+
+pub fn list() {
+    let file_content = fs::read_to_string(FILE_NAME).unwrap();
+    let parsed_data: Vec<Todos> = serde_json::from_str(&file_content).unwrap();
+
+    let mut table = Table::new();
+    table.add_row(row!["ID", "Message", "Done", "Created At"]);
+
+    for (idx, row) in parsed_data.iter().enumerate() {
+        table.add_row(row![
+            idx + 1,
+            row.message,
+            if row.completed { "YES" } else { "NO" },
+            row.created_at,
+        ]);
+    }
+
+    table.printstd();
+}
+
+pub fn done(index: String) {
+    let mut todos: Vec<Todos> = match fs::read_to_string(FILE_NAME) {
+        Ok(file_content) => serde_json::from_str(&file_content).unwrap_or_else(|_| Vec::new()),
+        Err(_) => Vec::new(),
+    };
+
+    let id: usize = index.parse().expect("Invalid number");
+
+    for (idx, todo) in todos.iter_mut().enumerate() {
+        if id == idx + 1 {
+            todo.completed = true;
+            break;
+        }
+    }
+
+    let updated = serde_json::to_string_pretty(&todos).unwrap();
+    fs::write(FILE_NAME, updated).unwrap();
 }
