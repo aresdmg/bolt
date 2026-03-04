@@ -1,7 +1,6 @@
 use std::{
     env,
     fs::{self, File},
-    path::Path,
     process,
 };
 
@@ -12,24 +11,23 @@ use crate::engine;
 pub const FILE_NAME: &str = "db.jsonc";
 
 fn config() {
-    let home = env::var("HOME").expect("HOME not set");
-    let dir_path = Path::new(&home).join(".local/share");
-    let file_path = dir_path.join(FILE_NAME);
-
-    // Ensure directory exists
-    if let Err(e) = fs::create_dir_all(&dir_path) {
-        eprintln!("Failed to create directory: {}", e);
-        process::exit(1);
-    }
-
-    // Create file if it does not exist
-    if !file_path.exists() {
-        match File::create(&file_path) {
-            Ok(_) => println!("File created"),
-            Err(err) => {
-                eprintln!("Failed to create file: {}", err);
-                process::exit(1);
+    match fs::exists(FILE_NAME) {
+        Ok(true) => {}
+        Ok(false) => {
+            let file = File::create(FILE_NAME);
+            match file {
+                Ok(_) => {
+                    println!("Files created")
+                }
+                Err(err) => {
+                    eprintln!("Failed to create file: {}", err);
+                    process::exit(1);
+                }
             }
+        }
+        Err(_e) => {
+            println!("");
+            process::exit(1);
         }
     }
 }
@@ -74,7 +72,7 @@ pub fn start() {
             println!("{}", ">> removed".red())
         }
         _ => {
-            println!("command:{} not found!", pasred_command.red());
+            println!("command: {} not found!", pasred_command.yellow());
         }
     }
 }
