@@ -71,6 +71,9 @@ pub fn start() {
             engine::remove(pasred_message);
             println!("{}", ">> removed".red())
         }
+        "help" => {
+            engine::help();
+        }
         _ => {
             println!("command: {} not found!", pasred_command.yellow());
         }

@@ -118,3 +118,13 @@ pub fn remove(index: String) {
     let updated_todos = serde_json::to_string_pretty(&todos).unwrap();
     fs::write(FILE_NAME, updated_todos).unwrap();
 }
+
+pub fn help() {
+    println!("🦀 BOLT\n");
+    println!("A terminal based todo app which uses json to store data written in rust.\n");
+    println!("Commands:");
+    println!("add\t<your todo item>\t<options>\tdescription: This command will add the todo in the list.");
+    println!("remove\t<id of the todo>\tdescription: This command is used to remove the todos from the list.");
+    println!("done\t<id of the todo>\tdescription: This command is going to make any specific todos as completed.");
+    println!("list\t\t\t\tdescription: Command that is going to list all the to-dos.\n");
+}
