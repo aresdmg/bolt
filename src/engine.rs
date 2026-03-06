@@ -1,4 +1,4 @@
-use std::fs;
+use std::{env, fs, path::PathBuf};
 
 use chrono::Utc;
 use prettytable::{Table, row};
@@ -36,10 +36,21 @@ pub fn pasred_message(message: &[String]) -> (String, Vec<String>) {
     (parsed_msg, options)
 }
 
+fn get_db_file() -> PathBuf {
+    let home = env::var("HOME").expect("HOME not set");
+    let mut dir = PathBuf::from(home);
+    dir.push(".bolt");
+
+    fs::create_dir_all(&dir).unwrap();
+    dir.join(FILE_NAME)
+}
+
 pub fn add(messages: String, _options: Vec<String>) {
     let mut todos: Vec<Todos>;
 
-    let file_result = fs::read_to_string(FILE_NAME);
+    let db_path: PathBuf = get_db_file();
+
+    let file_result = fs::read_to_string(&db_path);
     if file_result.is_ok() {
         let file_content = file_result.unwrap();
 
@@ -64,12 +75,14 @@ pub fn add(messages: String, _options: Vec<String>) {
     todos.push(new_todo);
     let json = serde_json::to_string_pretty(&todos).unwrap();
 
-    fs::write(FILE_NAME, json).unwrap();
+    fs::write(&db_path, json).unwrap();
     return;
 }
 
 pub fn list() {
-    let file_content = fs::read_to_string(FILE_NAME).unwrap();
+    let db_path: PathBuf = get_db_file();
+
+    let file_content = fs::read_to_string(&db_path).unwrap();
     let parsed_data: Vec<Todos> = serde_json::from_str(&file_content).unwrap();
 
     let mut table = Table::new();
@@ -88,7 +101,9 @@ pub fn list() {
 }
 
 pub fn done(index: String) {
-    let mut todos: Vec<Todos> = match fs::read_to_string(FILE_NAME) {
+    let db_path: PathBuf = get_db_file();
+
+    let mut todos: Vec<Todos> = match fs::read_to_string(&db_path) {
         Ok(file_content) => serde_json::from_str(&file_content).unwrap_or_else(|_| Vec::new()),
         Err(_) => Vec::new(),
     };
@@ -103,11 +118,13 @@ pub fn done(index: String) {
     }
 
     let updated = serde_json::to_string_pretty(&todos).unwrap();
-    fs::write(FILE_NAME, updated).unwrap();
+    fs::write(&db_path, updated).unwrap();
 }
 
 pub fn remove(index: String) {
-    let mut todos: Vec<Todos> = match fs::read_to_string(FILE_NAME) {
+    let db_path: PathBuf = get_db_file();
+
+    let mut todos: Vec<Todos> = match fs::read_to_string(&db_path) {
         Ok(file_content) => serde_json::from_str(&file_content).unwrap_or_else(|_| Vec::new()),
         Err(_) => Vec::new(),
     };
@@ -116,15 +133,21 @@ pub fn remove(index: String) {
     todos.remove(id - 1);
 
     let updated_todos = serde_json::to_string_pretty(&todos).unwrap();
-    fs::write(FILE_NAME, updated_todos).unwrap();
+    fs::write(&db_path, updated_todos).unwrap();
 }
 
 pub fn help() {
     println!("🦀 BOLT\n");
     println!("A terminal based todo app which uses json to store data written in rust.\n");
     println!("Commands:");
-    println!("add\t<your todo item>\t<options>\tdescription: This command will add the todo in the list.");
-    println!("remove\t<id of the todo>\tdescription: This command is used to remove the todos from the list.");
-    println!("done\t<id of the todo>\tdescription: This command is going to make any specific todos as completed.");
+    println!(
+        "add\t<your todo item>\t<options>\tdescription: This command will add the todo in the list."
+    );
+    println!(
+        "remove\t<id of the todo>\tdescription: This command is used to remove the todos from the list."
+    );
+    println!(
+        "done\t<id of the todo>\tdescription: This command is going to make any specific todos as completed."
+    );
     println!("list\t\t\t\tdescription: Command that is going to list all the to-dos.\n");
 }

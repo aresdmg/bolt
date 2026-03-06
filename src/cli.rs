@@ -1,6 +1,7 @@
 use std::{
     env,
     fs::{self, File},
+    path::PathBuf,
     process,
 };
 
@@ -11,23 +12,21 @@ use crate::engine;
 pub const FILE_NAME: &str = "db.jsonc";
 
 fn config() {
-    match fs::exists(FILE_NAME) {
-        Ok(true) => {}
-        Ok(false) => {
-            let file = File::create(FILE_NAME);
-            match file {
-                Ok(_) => {
-                    println!("Files created")
-                }
-                Err(err) => {
-                    eprintln!("Failed to create file: {}", err);
-                    process::exit(1);
-                }
+    let home = env::var("HOME").expect("HOME not set");
+    let mut app_dir = PathBuf::from(home);
+    app_dir.push(".bolt");
+
+    fs::create_dir_all(&app_dir).expect("Failed to create dir");
+
+    let db_file = app_dir.join(FILE_NAME);
+
+    if !db_file.exists() {
+        match File::create(&db_file) {
+            Ok(_) => println!("File created"),
+            Err(err) => {
+                eprintln!("Failed to create file: {}", err);
+                process::exit(1);
             }
-        }
-        Err(_e) => {
-            println!("");
-            process::exit(1);
         }
     }
 }
